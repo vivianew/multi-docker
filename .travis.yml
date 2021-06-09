@@ -1,0 +1,25 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t viviane/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run viviane/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t viviane/multi-client ./client
+  - docker build -t viviane/multi-nginx ./nginx
+  - docker build -t viviane/multi-server ./server
+  - docker build -t viviane/multi-worker ./worker
+
+# log into Docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+# push images to docker hub
+  - docker push viviane/multi-client
+  - docker push viviane/multi-nginx
+  - docker push viviane/multi-server
+  - docker push viviane/multi-worker
+
